@@ -6,7 +6,7 @@ uid          = "HUSSAR-PL-a1e2-c4t4-scfa-ssbmod-v0020"
 author       = "HUSSAR"
 copyright    = "HUSSAR, free to re-use code as long as you credit me in your mod"
 contributors = "Anihilnine, Crotalus, Speed2, MaCielPL, Nojoke, Petricpwnz, Nexus_of_Reality, Col_Walter_Kurtz, PsychoBoB"
-description  = "Improves score board and replays by adding more columns, team stats, players sorting, filtering units by type and more. (HUSSAR)"
+description  = "Improves score board and replays by adding more columns, team stats, players sorting, filtering units by type and more. Now with support for new army colors. (HUSSAR)"
 --icon         = "mod_icon.png"
 icon         = "/mods/SupremeScoreBoard/mod_icon.png"
 url          = "http://forums.faforever.com/viewtopic.php?f=41&t=10887"
@@ -43,9 +43,6 @@ after = {
     "ecbf6277-24e3-437a-b968-EcoManager-v7",
     "ecbf6277-24e3-437a-b968-EcoManager-v8",
     "ecbf6277-24e3-437a-b968-EcoManager-v9",
-    --"ecbf6277-24e3-437a-b968-EcoManager-v10",
-    --"ecbf6277-24e3-437a-b968-EcoManager-v11",
-    --"ecbf6277-24e3-437a-b968-EcoManager-v12",
 }
 --------------------------------------------------------------------------------------
 --[[ TODO
