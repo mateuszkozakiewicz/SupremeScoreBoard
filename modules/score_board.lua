@@ -2,7 +2,7 @@
 --  File:    /LUA/modules/UI/game/score.lua
 --  Author:  Chris Blackwell, HUSSAR
 --  Summary: Supreme Score Board in Game/Replay Sessions (see mod_info.lua for details)
---  Copyright © 2005 Gas Powered Games, Inc. All rights reserved.
+--  Copyright Â© 2005 Gas Powered Games, Inc. All rights reserved.
 -- ##########################################################################################
 --  NOTE:    Contact HUSSAR, in case you are trying to 
 --           implement/port this mod to latest version of FAF patch
@@ -349,7 +349,7 @@ function CreateScoreUI(parent)
     if sessionReplay then
         boardWidth = 415 --340 -- 380  
     else 
-        boardWidth = boardWidth + 40  --280
+        boardWidth = boardWidth + 90  --280
     end    
     controls.bgTop.Width:Set(boardWidth + boardMargin)
     controls.bgBottom.Width:Set(boardWidth + boardMargin)
@@ -645,10 +645,9 @@ function CreateArmyLine(armyID, army)
              end         
         end 
         Tooltip.AddControlTooltip(group.shareUnitsIcon, str.tooltip('share_units'))
-        
+
         position = position + iconSize + 2
         group.shareEngyIcon = CreateInfoIcon(group, 'eco.engyIncome.dds')
-        --group.shareEngyIcon:SetTexture(modTextures..'eco.engyIncome.dds')
         LayoutHelpers.AtRightIn(group.shareEngyIcon, group, position)
         LayoutHelpers.AtVerticalCenterIn(group.shareEngyIcon, group)
         group.shareEngyIcon.Height:Set(iconSize)
@@ -664,10 +663,16 @@ function CreateArmyLine(armyID, army)
             end 
         end 
         Tooltip.AddControlTooltip(group.shareEngyIcon, str.tooltip('share_engy'))
-        
-        position = position + iconSize + 3
+
+        position = position + iconSize + 2
+        group.engyColumn = UIUtil.CreateText(group, '0', fontSize, fontName)
+        group.engyColumn:DisableHitTest()
+        group.engyColumn:SetColor(textColorEngy)
+        LayoutHelpers.AtRightIn(group.engyColumn, group, position)
+        LayoutHelpers.AtVerticalCenterIn(group.engyColumn, group)
+
+        position = position + 40
         group.shareMassIcon = CreateInfoIcon(group, 'eco.massIncome.dds')
-        --group.shareMassIcon:SetTexture(modTextures..'eco.massIncome.dds')
         LayoutHelpers.AtRightIn(group.shareMassIcon, group, position)
         LayoutHelpers.AtVerticalCenterIn(group.shareMassIcon, group)
         group.shareMassIcon.Height:Set(iconSize)
@@ -683,6 +688,13 @@ function CreateArmyLine(armyID, army)
             end
         end
         Tooltip.AddControlTooltip(group.shareMassIcon, str.tooltip('share_mass'))
+
+        position = position + iconSize + 2
+        group.massColumn = UIUtil.CreateText(group, '0', fontSize, fontName)
+        group.massColumn:DisableHitTest()
+        group.massColumn:SetColor(textColorMass)
+        LayoutHelpers.AtRightIn(group.massColumn, group, position)
+        LayoutHelpers.AtVerticalCenterIn(group.massColumn, group)
     end
 
     -- create score data column
@@ -710,7 +722,7 @@ function CreateArmyLine(armyID, army)
         --group.nameColumn.Right:Set(position - sw)
         group.nameColumn:SetClipToWidth(true)
     end
-    
+
     -- TODO figure out if it is possible to ACCESS and show info about allied players in Sim mod!
     -- show more player's info only in Replay session 
     if ((isPlayerArmy or isTeamArmy) and sessionReplay) then
@@ -2318,7 +2330,7 @@ function _OnBeat()
            -- skip lines without players or dead players
            local armyID = line.armyID
            local data = currentScores[armyID]  
-           
+
            local player = {}
            -- Stats must be updated even for dead players so that team Stats are accurate 
            if line.isArmyLine and data then
@@ -2339,9 +2351,10 @@ function _OnBeat()
                        line.unitColumn:SetText(GetStatsForArmy(player, Columns.Units.Active))
                    end
                else
-                   -- TODO show Stats of team-mates in game session!
-                   -- this will require change in FAF sync/share files 
-                   -- because these Stats are not shared at this moment in UI mods
+                    if data.resources.massin.rate and line.massColumn then
+                        line.massColumn:SetText(GetStatsForArmy(player, Columns.Mass.Active))
+                        line.engyColumn:SetText(GetStatsForArmy(player, Columns.Engy.Active))
+                    end
                end
                
                -- update army's score
