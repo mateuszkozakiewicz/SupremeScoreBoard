@@ -70,6 +70,7 @@ local issuedNoRushWarning = false
 local gameSpeed = 0
 local needExpand = false
 local contractOnCreate = false
+local showResourceStorage = false
  
 -- added configuration variables 
 local boardMargin = 20
@@ -441,7 +442,7 @@ function CreateScoreUI(parent)
     end
     --controls.collapseArrow:SetCheck(true, true)
     controls.collapseArrow:SetCheck(false, false)
-    
+
 end
 
 function SetLayout()
@@ -825,7 +826,13 @@ function CreateArmyLine(armyID, army)
             end
         end
     else    
-        group:DisableHitTest()
+        group.HandleEvent = function(self, event)
+            if event.Type == 'MouseEnter' then
+                showResourceStorage = true
+            elseif event.Type == 'MouseExit' then
+                showResourceStorage = false
+            end
+        end
     end
     
     return group
@@ -1935,7 +1942,8 @@ function UpdatePlayerStats(armyID, armies, scoreData)
     else
         player.eco.massIncome = num.init(scoreData.resources.massin.rate)   * 10 -- per game ticks
         player.eco.engyIncome = num.init(scoreData.resources.energyin.rate) * 10 -- per game ticks
-        
+        player.eco.massStored = num.init(scoreData.resources.storage.storedMass)
+        player.eco.engyStored = num.init(scoreData.resources.storage.storedEnergy)
         UpdateUnitStats(player, scoreData)
         
         -- show announcements about built experimental units  
@@ -2352,8 +2360,13 @@ function _OnBeat()
                    end
                else
                     if data.resources.massin.rate and line.massColumn then
-                        line.massColumn:SetText(GetStatsForArmy(player, Columns.Mass.Active))
-                        line.engyColumn:SetText(GetStatsForArmy(player, Columns.Engy.Active))
+                        if showResourceStorage then
+                            line.massColumn:SetText(num.frmt(player.eco.massStored))
+                            line.engyColumn:SetText(num.frmt(player.eco.engyStored))
+                        else 
+                            line.massColumn:SetText(GetStatsForArmy(player, Columns.Mass.Active))
+                            line.engyColumn:SetText(GetStatsForArmy(player, Columns.Engy.Active))
+                        end
                     end
                end
                
