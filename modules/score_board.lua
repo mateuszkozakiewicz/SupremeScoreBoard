@@ -625,27 +625,27 @@ function CreateArmyLine(armyID, army)
     group.nameColumn:SetColor(textColor)
     LayoutHelpers.AtLeftIn(group.nameColumn, group, position)
     LayoutHelpers.AtVerticalCenterIn(group.nameColumn, group)
-    
-    if isPlayerArmy and isSharing and not sessionReplay then
+    if isPlayerArmy and not sessionReplay then
         local tip = ''
         position = iconSize * 3   -- offset score column
         group.shareUnitsIcon = CreateInfoIcon(group, 'units.total.dds')
-        --group.shareUnitsIcon:SetTexture(modTextures..'units.total.dds')
-        LayoutHelpers.AtRightIn(group.shareUnitsIcon, group, position)
-        LayoutHelpers.AtVerticalCenterIn(group.shareUnitsIcon, group)
-        group.shareUnitsIcon.Height:Set(iconSize)
-        group.shareUnitsIcon.Width:Set(iconSize)
-        group.shareUnitsIcon.armyID = armyID
-        group.shareUnitsIcon.OnClick = function(self, eventModifiers)
+        if GetFocusArmy() ~= armyID then
+            LayoutHelpers.AtRightIn(group.shareUnitsIcon, group, position)
+            LayoutHelpers.AtVerticalCenterIn(group.shareUnitsIcon, group)
+            group.shareUnitsIcon.Height:Set(iconSize)
+            group.shareUnitsIcon.Width:Set(iconSize)
+            group.shareUnitsIcon.armyID = armyID
+            group.shareUnitsIcon.OnClick = function(self, eventModifiers)
             if eventModifiers.Right then 
-                 Diplomacy.RequestUnits(self.armyID) 
-             elseif eventModifiers.Shift then 
-                 Diplomacy.SendUnits(self.armyID, true) -- share all units
-             elseif not eventModifiers.Shift then 
-                 Diplomacy.SendUnits(self.armyID, false) -- share selected units
-             end         
-        end 
-        Tooltip.AddControlTooltip(group.shareUnitsIcon, str.tooltip('share_units'))
+                    Diplomacy.RequestUnits(self.armyID) 
+                elseif eventModifiers.Shift then 
+                    Diplomacy.SendUnits(self.armyID, true) -- share all units
+                elseif not eventModifiers.Shift then 
+                    Diplomacy.SendUnits(self.armyID, false) -- share selected units
+                end         
+            end 
+            Tooltip.AddControlTooltip(group.shareUnitsIcon, str.tooltip('share_units'))
+        end
 
         position = position + iconSize + 2
         group.shareEngyIcon = CreateInfoIcon(group, 'eco.engyIncome.dds')
@@ -654,16 +654,6 @@ function CreateArmyLine(armyID, army)
         group.shareEngyIcon.Height:Set(iconSize)
         group.shareEngyIcon.Width:Set(iconSize)
         group.shareEngyIcon.armyID = armyID
-        group.shareEngyIcon.OnClick = function(self, eventModifiers)
-            if eventModifiers.Right then 
-                Diplomacy.RequestResource(self.armyID, 'energy')
-            elseif eventModifiers.Shift then 
-                Diplomacy.SendResource(self.armyID, 0, 100) -- Share 100% energy
-            elseif not eventModifiers.Shift then 
-                Diplomacy.SendResource(self.armyID, 0, 50) -- Share 50% energy
-            end 
-        end 
-        Tooltip.AddControlTooltip(group.shareEngyIcon, str.tooltip('share_engy'))
 
         position = position + iconSize + 2
         group.engyColumn = UIUtil.CreateText(group, '0', fontSize, fontName)
@@ -679,16 +669,30 @@ function CreateArmyLine(armyID, army)
         group.shareMassIcon.Height:Set(iconSize)
         group.shareMassIcon.Width:Set(iconSize)
         group.shareMassIcon.armyID = armyID
-        group.shareMassIcon.OnClick = function(self, eventModifiers)
-            if eventModifiers.Right then 
-                Diplomacy.RequestResource(self.armyID, 'mass')
-            elseif eventModifiers.Shift then 
-                Diplomacy.SendResource(self.armyID, 100, 0) -- Share 100% mass
-            elseif not eventModifiers.Shift then 
-                Diplomacy.SendResource(self.armyID, 50, 0) -- Share 50% mass
+
+        if GetFocusArmy() ~= armyID then
+            group.shareEngyIcon.OnClick = function(self, eventModifiers)
+                if eventModifiers.Right then 
+                    Diplomacy.RequestResource(self.armyID, 'energy')
+                elseif eventModifiers.Shift then 
+                    Diplomacy.SendResource(self.armyID, 0, 100) -- Share 100% energy
+                elseif not eventModifiers.Shift then 
+                    Diplomacy.SendResource(self.armyID, 0, 50) -- Share 50% energy
+                end 
+            end 
+            Tooltip.AddControlTooltip(group.shareEngyIcon, str.tooltip('share_engy'))
+
+            group.shareMassIcon.OnClick = function(self, eventModifiers)
+                if eventModifiers.Right then 
+                    Diplomacy.RequestResource(self.armyID, 'mass')
+                elseif eventModifiers.Shift then 
+                    Diplomacy.SendResource(self.armyID, 100, 0) -- Share 100% mass
+                elseif not eventModifiers.Shift then 
+                    Diplomacy.SendResource(self.armyID, 50, 0) -- Share 50% mass
+                end
             end
+            Tooltip.AddControlTooltip(group.shareMassIcon, str.tooltip('share_mass'))
         end
-        Tooltip.AddControlTooltip(group.shareMassIcon, str.tooltip('share_mass'))
 
         position = position + iconSize + 2
         group.massColumn = UIUtil.CreateText(group, '0', fontSize, fontName)
@@ -1888,6 +1892,7 @@ function UpdatePlayerStats(armyID, armies, scoreData)
     if not scoreData.general.score then log.Warning('UpdatePlayerStats scoreData.general.score is nil' ) end
     
     player.dead = armies[armyID].outOfGame --or num.init(scoreData.general.currentunits.count) == 0
+    player.ally = IsAlly(GetFocusArmy(), armyID)
       
     -- for dead/alive players, get only some score info 
     player.score = num.init(scoreData.general.score)
@@ -2253,6 +2258,8 @@ function KillArmyLine(line)
     if line.shareUnitsIcon then line.shareUnitsIcon:Hide() end
     if line.shareMassIcon then  line.shareMassIcon:Hide()  end
     if line.shareEngyIcon then  line.shareEngyIcon:Hide()  end
+    if line.massColumn then  line.massColumn:Hide()  end
+    if line.engyColumn then  line.engyColumn:Hide()  end
                        
     if sessionReplay then
         line.totalColumn:SetColor(armyColorDefeted)
@@ -2284,6 +2291,22 @@ currentScores = {}
 function Update(newScoreData)
     currentScores = table.deepcopy(newScoreData)
     --import(modPath .. 'modules/score_manager.lua').SetScoreData(currentScores)
+end
+
+function ShowEconomyColumns(line)
+    line.shareUnitsIcon:Show()
+    line.shareEngyIcon:Show()
+    line.shareMassIcon:Show()
+    line.massColumn:Show()
+    line.engyColumn:Show()
+end
+
+function HideEconomyColumns(line) 
+    line.shareUnitsIcon:Hide()
+    line.shareEngyIcon:Hide()
+    line.shareMassIcon:Hide()
+    line.massColumn:Hide()
+    line.engyColumn:Hide()
 end
 
 local initalBeats = true
@@ -2351,14 +2374,19 @@ function _OnBeat()
                end 
            elseif line.isArmyLine and data then
                   
-               if sessionReplay then
-                   if data.resources.massin.rate then
-                       line.totalColumn:SetText(GetStatsForArmy(player, Columns.Total.Active))
-                       line.massColumn:SetText(GetStatsForArmy(player, Columns.Mass.Active))
-                       line.engyColumn:SetText(GetStatsForArmy(player, Columns.Engy.Active))
-                       line.unitColumn:SetText(GetStatsForArmy(player, Columns.Units.Active))
-                   end
-               else
+                if sessionReplay then
+                    if data.resources.massin.rate then
+                        line.totalColumn:SetText(GetStatsForArmy(player, Columns.Total.Active))
+                        line.massColumn:SetText(GetStatsForArmy(player, Columns.Mass.Active))
+                        line.engyColumn:SetText(GetStatsForArmy(player, Columns.Engy.Active))
+                        line.unitColumn:SetText(GetStatsForArmy(player, Columns.Units.Active))
+                    end
+                else
+                    if player.ally then
+                        ShowEconomyColumns(line)
+                    else 
+                        HideEconomyColumns(line)
+                    end
                     if data.resources.massin.rate and line.massColumn then
                         if showResourceStorage then
                             line.massColumn:SetText(num.frmt(player.eco.massStored))
@@ -2368,7 +2396,7 @@ function _OnBeat()
                             line.engyColumn:SetText(GetStatsForArmy(player, Columns.Engy.Active))
                         end
                     end
-               end
+                end
                
                -- update army's score
                if player.score == -1 then

@@ -2,7 +2,7 @@
 --  File:    /LUA/modules/diplomacy.lua
 --  Author:  HUSSAR
 --  Summary: Provides functions for sending and requesting resources and units from allied players
---  Copyright © 2016 HUSSAR All rights reserved.
+--  Copyright ï¿½ 2016 HUSSAR All rights reserved.
 -- ##########################################################################################
 --  NOTE: Contact HUSSAR, in case you are trying to 
 --        implement/port this mod to latest version of FAF patch
@@ -31,8 +31,8 @@ function CanShare(armySender, armyTarget)
     -- handle invalid army IDs
     if armySender <= 0 or armyTarget <= 0 then
        return false
-    elseif armySender == armyTarget then 
-       return false -- cannot share with yourself
+    -- elseif armySender == armyTarget then 
+    --    return false -- cannot share with yourself
     else 
        return IsAlly(armySender, armyTarget)
     end
