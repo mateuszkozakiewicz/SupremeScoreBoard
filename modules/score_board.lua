@@ -1892,7 +1892,11 @@ function UpdatePlayerStats(armyID, armies, scoreData)
     if not scoreData.general.score then log.Warning('UpdatePlayerStats scoreData.general.score is nil' ) end
     
     player.dead = armies[armyID].outOfGame --or num.init(scoreData.general.currentunits.count) == 0
-    player.ally = IsAlly(GetFocusArmy(), armyID)
+    if not sessionReplay then
+        player.ally = IsAlly(GetFocusArmy(), armyID)
+    else 
+        player.ally = true
+    end
       
     -- for dead/alive players, get only some score info 
     player.score = num.init(scoreData.general.score)
